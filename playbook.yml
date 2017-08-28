@@ -1,0 +1,22 @@
+---
+- name: playbook inicial para containers docker
+  hosts: web
+  become: yes
+  tasks:
+    - name: instala a biblioteca para docker
+      apt:
+        name: python-docker
+    - name: cria container de banco
+      docker_container:
+        name: "banco"
+        image: "mysql:5.7"
+        env:
+          MYSQL_ROOT_PASSWORD: password
+    - name: cria container do wordpress
+      docker_container:
+        name: "meublog"
+        image: "wordpress"
+        links:
+          - "banco:mysql"
+        ports:
+          - "80:80"
