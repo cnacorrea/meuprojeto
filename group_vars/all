@@ -1,0 +1,18 @@
+---
+aws_access_key: "SUA CHAVE DE ACESSO AWS"
+aws_secret_key: "SUA CHAVE SECRETA AWS"
+
+application: "wordpress" 
+target_env: "prod"
+aws_region: "us-east-1"
+aws_region_short: "ue1"
+aws_region_az: "c"
+vpc_name: "vpc-{{ aws_region_short }}-{{ target_env }}-{{ application }}"
+vpc_cidr_block: "172.27.0.0/16"
+public_subnet_1_cidr: "172.27.0.0/18"
+public_subnet_2_cidr: "172.27.64.0/18"
+private_subnet_1_cidr: "172.27.128.0/18"
+private_subnet_2_cidr: "172.27.192.0/18"
+keypair_name: "aluno-key"
+
+ssh_pubkey: 'CONTEUDO DO SEU id_rsa.pub'
