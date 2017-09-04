@@ -1,0 +1,11 @@
+---
+# tasks file for roles/keypair
+- name: Cria um keypair na AWS a partir de uma chave publica
+  ec2_key:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ aws_region }}"
+    name: "{{ keypair_name }}"
+    key_material: "{{ ssh_pubkey }}"
+    force: false
+    state: present
