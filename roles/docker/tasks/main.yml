@@ -1,0 +1,39 @@
+---
+# tasks file for roles/docker
+- name: instala dependencias Docker
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - gnupg2
+    - software-properties-common
+    - python-pip
+ 
+- name: instala modulos python que podem ser necessarios
+  pip:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - urllib3
+    - pyOpenSSL
+    - ndg-httpsclient
+    - pyasn1
+
+- name: adiciona a chave de assinatura de pacotes Ubuntu do Docker
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: adiciona o repositorio Docker ao sistema
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable"
+    state: present
+      
+- name: instala o pacote docker-ce
+  apt:
+    name: docker-ce
+    state: present
+    update_cache: yes

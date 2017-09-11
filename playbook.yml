@@ -21,4 +21,6 @@
         update_cache: yes
         cache_valid_time: 3600
       tags: [ 'app' ]
-
+  roles:
+    - { role: docker, tags: [ 'docker' ] }
+    - { role: wordpress, tags: [ 'app', 'wordpress' ] }

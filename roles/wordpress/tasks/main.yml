@@ -1,0 +1,31 @@
+---
+# tasks file for roles/wordpress
+- name: instala a biblioteca para gerenciamento docker
+  apt:
+    name: python-docker
+
+- name: cria o diretório onde a base de dados MySQL sera salva
+  file:
+    path: /dados-banco
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: cria container MySQL, com dados salvos na pasta /dados-banco
+  docker_container:
+    name: "banco"
+    image: "mysql:5.7"
+    env:
+      MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - /dados-banco:/var/lib/mysql
+
+- name: cria container do wordpress
+  docker_container:
+    name: "meublog"
+    image: "wordpress"
+    links:
+      - "banco:mysql"
+    ports:
+      - "80:80"
