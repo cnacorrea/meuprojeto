@@ -1,0 +1,61 @@
+---
+# tasks file for roles/vpc
+- name: Cria o VPC de nossa aplicacao
+  ec2_vpc_net:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    state: present
+    region: "{{ aws_region }}"
+    name: "{{ vpc_name }}"
+    cidr_block: "{{ vpc_cidr_block }}"
+  register: my_vpc
+
+- name: Salva o ID do VPC criado na variavel vpc_id
+  set_fact:
+    vpc_id: "{{ my_vpc.vpc.id }}"
+
+- name: Cria a subnet publica 1
+  ec2_vpc_subnet:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    state: present
+    region: "{{ aws_region }}"
+    vpc_id: "{{ vpc_id }}"
+    cidr: "{{ public_subnet_1_cidr }}"
+    az: "{{ aws_region }}{{ aws_region_az }}"
+    resource_tags:
+      Name: "public-subnet"
+  register: my_public_subnet
+
+- name: Salva o ID da subnet publica na variavel public_subnet_id
+  set_fact:
+    public_subnet_id: "{{ my_public_subnet.subnet.id }}"
+
+- name: Cria um gateway de Internet em nosso VPC
+  ec2_vpc_igw:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    state: present
+    region: "{{ aws_region }}"
+    vpc_id: "{{ vpc_id }}"
+  register: my_vpc_igw
+
+- name: Salva o ID do gateway de Internet na variavel igw_id
+  set_fact:
+    igw_id: "{{ my_vpc_igw.gateway_id }}"
+
+- name: Cria uma rota default na subnet publica, apontando para nosso gateway de Internet
+  ec2_vpc_route_table:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    state: present
+    region: "{{ aws_region }}"
+    vpc_id: "{{ vpc_id }}"
+    tags:
+      Name: "Public"
+    subnets:
+      - "{{ public_subnet_id }}"
+    routes:
+      - dest: "0.0.0.0/0"
+        gateway_id: "{{ igw_id }}"
+

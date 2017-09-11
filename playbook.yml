@@ -3,3 +3,4 @@
   connection: local
   roles:
   - { role: keypair, tags: [ 'keypairs', 'infra' ] }
+  - { role: vpc, tags: [ 'vpc', 'infra', 'always' ] }
