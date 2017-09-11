@@ -1,0 +1,64 @@
+---
+# tasks file for roles/ec2-app
+- name: Cria o grupo de seguranca para nossa instancia EC2
+  ec2_group:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    state: present
+    region: "{{ aws_region }}"
+    vpc_id: "{{ vpc_id }}"
+    name: "app"
+    description: "grupo de seguranca da instancia app"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+  register: app_ec2_sg
+  tags: [ 'app-ec2' ]
+
+- name: Inicia a instancia para nossa aplicacao
+  ec2:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ aws_region }}"
+    vpc_subnet_id: "{{ subnet }}"
+    group_id: "{{ app_ec2_sg.group_id }}"
+    instance_type: "{{ instance_type }}"
+    image: "{{ image }}"
+    wait: yes
+    exact_count: "{{ count }}"
+    count_tag:
+      Name: "app"
+    assign_public_ip: no
+    keypair: "{{ keypair_name }}"
+    volumes:
+      - device_name: /dev/sda1
+        volume_type: gp2
+        volume_size: "{{ volume_size }}"
+    instance_tags:
+      Name: "app"
+  register: app_ec2_instance
+  tags: [ 'app-ec2' ]
+
+- name: Associa um IP publico com a instancia recem-criada
+  ec2_eip:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    state: present
+    region: "{{ aws_region }}"
+    in_vpc: yes
+    reuse_existing_ip_allowed: yes
+    device_id: "{{ item.id }}"
+  tags: [ 'app-ec2' ]
+  with_items: "{{ app_ec2_instance.tagged_instances }}"
+  register: app_ec2_eip
+  when: item.public_ip == None
+
